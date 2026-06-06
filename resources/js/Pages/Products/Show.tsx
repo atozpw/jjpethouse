@@ -24,11 +24,12 @@ type Product = {
   stock: number;
   weight: number;
   image: string;
-  product_category: {
-    id: number | null;
+  images: string[];
+  categories: {
+    id: number;
     name: string;
-    slug: string | null;
-  };
+    slug: string;
+  }[];
   variants: ProductVariant[];
 };
 
@@ -39,6 +40,7 @@ type Props = {
 export default function ProductShow({ product }: Props) {
   const [quantity, setQuantity] = useState(1);
   const [selectedVariantId, setSelectedVariantId] = useState<number | null>(null);
+  const [selectedImage, setSelectedImage] = useState(product.images[0] ?? product.image);
   const [added, setAdded] = useState(false);
 
   const selectedVariant = useMemo(
@@ -87,26 +89,42 @@ export default function ProductShow({ product }: Props) {
             <div className="space-y-3">
               <div className="relative h-[260px] sm:h-[300px] lg:aspect-square lg:h-auto rounded-xl overflow-hidden border bg-white">
                 <img
-                  src={product.image ?? '/no-image.png'}
+                  src={selectedImage ?? '/no-image.png'}
                   alt={product.name}
                   className="h-full w-full object-contain p-4 lg:p-6"
                 />
               </div>
 
               <div className="grid grid-cols-4 lg:grid-cols-5 gap-2">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="aspect-square rounded-lg border bg-muted/40"
-                  />
+                {product.images.map((image, index) => (
+                  <button
+                    type="button"
+                    key={`${image}-${index}`}
+                    onClick={() => setSelectedImage(image)}
+                    className={`aspect-square overflow-hidden rounded-lg border bg-white ${
+                      selectedImage === image ? 'border-primary ring-1 ring-primary' : 'hover:border-primary/50'
+                    }`}
+                  >
+                    <img src={image} alt={`${product.name} ${index + 1}`} className="h-full w-full object-cover" />
+                  </button>
                 ))}
               </div>
             </div>
 
             <div className="space-y-4 lg:space-y-5">
               <nav className="text-xs text-muted-foreground">
-                Home / {product.product_category.name}
+                Home / {product.categories.map((category) => category.name).join(' / ') || 'Pet Shop'}
               </nav>
+
+              {product.categories.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {product.categories.map((category) => (
+                    <span key={category.id} className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                      {category.name}
+                    </span>
+                  ))}
+                </div>
+              )}
 
               <h1 className="text-xl lg:text-3xl font-bold">
                 {product.name}
@@ -122,7 +140,7 @@ export default function ProductShow({ product }: Props) {
                 Rp {Number(price).toLocaleString('id-ID')}
               </div>
 
-              <div className="space-y-2">
+              {product.variants.length > 0 && <div className="space-y-2">
                 <p className="text-sm font-medium">
                   Varian:
                   <span className="ml-2 text-primary">
@@ -150,7 +168,7 @@ export default function ProductShow({ product }: Props) {
                     );
                   })}
                 </div>
-              </div>
+              </div>}
 
               <div className="hidden lg:block pt-4 space-y-4 border-t">
                 <div className="flex items-center justify-between">

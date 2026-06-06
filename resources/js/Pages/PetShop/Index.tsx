@@ -19,8 +19,7 @@ type Product = {
   description: string | null;
   brand: string | null;
   petType: string | null;
-  categoryName: string | null;
-  categorySlug: string | null;
+  categories: Category[];
 };
 
 type SortOption = 'newest' | 'oldest' | 'price-low' | 'price-high' | 'name-az';
@@ -50,8 +49,14 @@ export default function PetShopIndex({ categories, products }: Props) {
     const keyword = search.trim().toLowerCase();
 
     const rows = products.filter((product) => {
-      const matchesCategory = !selectedCategory || product.categorySlug === selectedCategory;
-      const matchesSearch = !keyword || [product.name, product.description, product.brand, product.petType, product.categoryName]
+      const matchesCategory = !selectedCategory || product.categories.some((category) => category.slug === selectedCategory);
+      const matchesSearch = !keyword || [
+        product.name,
+        product.description,
+        product.brand,
+        product.petType,
+        ...product.categories.map((category) => category.name),
+      ]
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(keyword));
 
@@ -225,9 +230,13 @@ export default function PetShopIndex({ categories, products }: Props) {
                           alt={product.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                         />
-                        <span className="absolute top-2 left-2 bg-primary text-white text-xs px-2 py-1 rounded-full">
-                          {product.categoryName}
-                        </span>
+                        <div className="absolute left-2 top-2 flex max-w-[calc(100%-1rem)] flex-wrap gap-1">
+                          {product.categories.slice(0, 2).map((category) => (
+                            <span key={category.id} className="rounded-full bg-primary px-2 py-1 text-[10px] text-white">
+                              {category.name}
+                            </span>
+                          ))}
+                        </div>
                       </div>
 
                       <div className="p-3 flex flex-col flex-1">

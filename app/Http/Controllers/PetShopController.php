@@ -11,7 +11,6 @@ class PetShopController extends Controller
     public function show(string $slug): Response
     {
         $product = DB::table('products')
-            ->leftJoin('product_categories', 'product_categories.id', '=', 'products.product_category_id')
             ->where('products.slug', $slug)
             ->where('products.is_active', true)
             ->first([
@@ -26,9 +25,6 @@ class PetShopController extends Controller
                 'products.stock',
                 'products.weight',
                 'products.image',
-                'product_categories.id as category_id',
-                'product_categories.name as category_name',
-                'product_categories.slug as category_slug',
             ]);
 
         abort_if(! $product, 404);
@@ -45,6 +41,27 @@ class PetShopController extends Controller
                 'stock' => (int) $variant->stock,
             ]);
 
+        $categories = DB::table('product_categories')
+            ->join('product_category_product', 'product_categories.id', '=', 'product_category_product.product_category_id')
+            ->where('product_category_product.product_id', $product->id)
+            ->orderBy('product_categories.name')
+            ->get(['product_categories.id', 'product_categories.name', 'product_categories.slug'])
+            ->map(fn ($category) => [
+                'id' => (int) $category->id,
+                'name' => $category->name,
+                'slug' => $category->slug,
+            ]);
+
+        $images = DB::table('product_images')
+            ->where('product_id', $product->id)
+            ->orderBy('position')
+            ->orderBy('id')
+            ->pluck('url');
+
+        if ($images->isEmpty() && $product->image) {
+            $images->push($product->image);
+        }
+
         return Inertia::render('Products/Show', [
             'product' => [
                 'id' => (int) $product->id,
@@ -58,11 +75,8 @@ class PetShopController extends Controller
                 'stock' => (int) $product->stock,
                 'weight' => (int) $product->weight,
                 'image' => $product->image ?: '/no-image.png',
-                'product_category' => [
-                    'id' => $product->category_id ? (int) $product->category_id : null,
-                    'name' => $product->category_name ?: 'Pet Shop',
-                    'slug' => $product->category_slug,
-                ],
+                'images' => $images->values(),
+                'categories' => $categories,
                 'variants' => $variants,
             ],
         ]);
@@ -76,15 +90,11 @@ class PetShopController extends Controller
             ->get(['id', 'name', 'slug', 'description', 'image']);
 
         $products = DB::table('products')
-            ->leftJoin('product_categories', 'product_categories.id', '=', 'products.product_category_id')
             ->where('products.is_active', true)
             ->orderByDesc('products.created_at')
             ->orderBy('products.id')
             ->get([
                 'products.id',
-                'products.product_category_id as categoryId',
-                'product_categories.name as categoryName',
-                'product_categories.slug as categorySlug',
                 'products.name',
                 'products.slug',
                 'products.description',
@@ -93,21 +103,42 @@ class PetShopController extends Controller
                 'products.price',
                 'products.stock',
                 'products.image',
-            ])
-            ->map(fn ($product) => [
-                'id' => (int) $product->id,
-                'categoryId' => $product->categoryId ? (int) $product->categoryId : null,
-                'categoryName' => $product->categoryName,
-                'categorySlug' => $product->categorySlug,
-                'name' => $product->name,
-                'slug' => $product->slug,
-                'description' => $product->description,
-                'brand' => $product->brand,
-                'petType' => $product->petType,
-                'price' => (float) $product->price,
-                'stock' => (int) $product->stock,
-                'image' => $product->image ?: '/no-image.png',
             ]);
+
+        $categoriesByProduct = DB::table('product_categories')
+            ->join('product_category_product', 'product_categories.id', '=', 'product_category_product.product_category_id')
+            ->whereIn('product_category_product.product_id', $products->pluck('id'))
+            ->orderBy('product_categories.name')
+            ->get([
+                'product_category_product.product_id',
+                'product_categories.id',
+                'product_categories.name',
+                'product_categories.slug',
+            ])
+            ->groupBy('product_id');
+
+        $products = $products->map(function ($product) use ($categoriesByProduct) {
+                $productCategories = collect($categoriesByProduct->get($product->id, []))
+                    ->map(fn ($category) => [
+                        'id' => (int) $category->id,
+                        'name' => $category->name,
+                        'slug' => $category->slug,
+                    ])
+                    ->values();
+
+                return [
+                    'id' => (int) $product->id,
+                    'categories' => $productCategories,
+                    'name' => $product->name,
+                    'slug' => $product->slug,
+                    'description' => $product->description,
+                    'brand' => $product->brand,
+                    'petType' => $product->petType,
+                    'price' => (float) $product->price,
+                    'stock' => (int) $product->stock,
+                    'image' => $product->image ?: '/no-image.png',
+                ];
+            });
 
         return Inertia::render('PetShop/Index', [
             'categories' => $categories,

@@ -7,6 +7,13 @@ use App\Http\Controllers\ClinicController;
 use App\Http\Controllers\PetShopController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\ProductImportController as AdminProductImportController;
+use App\Http\Controllers\Admin\ProductCategoryController as AdminProductCategoryController;
+use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
+use App\Http\Controllers\Admin\BookingController as AdminBookingController;
+use App\Http\Controllers\Admin\BranchController as AdminBranchController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -45,3 +52,49 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// Admin Panel
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+    // Products
+    Route::get('/products', [AdminProductController::class, 'index'])->name('products.index');
+    Route::get('/products/import', [AdminProductImportController::class, 'index'])->name('products.import');
+    Route::post('/products/import/upload', [AdminProductImportController::class, 'upload'])->name('products.import.upload');
+    Route::get('/products/create', [AdminProductController::class, 'create'])->name('products.create');
+    Route::post('/products', [AdminProductController::class, 'store'])->name('products.store');
+    Route::get('/products/{id}/edit', [AdminProductController::class, 'edit'])->name('products.edit');
+    Route::patch('/products/{id}', [AdminProductController::class, 'update'])->name('products.update');
+    Route::delete('/products/{id}', [AdminProductController::class, 'destroy'])->name('products.destroy');
+
+    // Product Categories
+    Route::get('/product-categories', [AdminProductCategoryController::class, 'index'])->name('product-categories.index');
+    Route::get('/product-categories/create', [AdminProductCategoryController::class, 'create'])->name('product-categories.create');
+    Route::post('/product-categories', [AdminProductCategoryController::class, 'store'])->name('product-categories.store');
+    Route::get('/product-categories/{id}/edit', [AdminProductCategoryController::class, 'edit'])->name('product-categories.edit');
+    Route::patch('/product-categories/{id}', [AdminProductCategoryController::class, 'update'])->name('product-categories.update');
+    Route::delete('/product-categories/{id}', [AdminProductCategoryController::class, 'destroy'])->name('product-categories.destroy');
+
+    // Services
+    Route::get('/services', [AdminServiceController::class, 'index'])->name('services.index');
+    Route::get('/services/create', [AdminServiceController::class, 'create'])->name('services.create');
+    Route::post('/services', [AdminServiceController::class, 'store'])->name('services.store');
+    Route::get('/services/{id}/edit', [AdminServiceController::class, 'edit'])->name('services.edit');
+    Route::patch('/services/{id}', [AdminServiceController::class, 'update'])->name('services.update');
+    Route::delete('/services/{id}', [AdminServiceController::class, 'destroy'])->name('services.destroy');
+
+    // Bookings
+    Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
+    Route::get('/bookings/{id}/edit', [AdminBookingController::class, 'edit'])->name('bookings.edit');
+    Route::patch('/bookings/{id}', [AdminBookingController::class, 'update'])->name('bookings.update');
+    Route::patch('/bookings/{id}/status', [AdminBookingController::class, 'updateStatus'])->name('bookings.update-status');
+    Route::delete('/bookings/{id}', [AdminBookingController::class, 'destroy'])->name('bookings.destroy');
+
+    // Branches
+    Route::get('/branches', [AdminBranchController::class, 'index'])->name('branches.index');
+    Route::get('/branches/create', [AdminBranchController::class, 'create'])->name('branches.create');
+    Route::post('/branches', [AdminBranchController::class, 'store'])->name('branches.store');
+    Route::get('/branches/{id}/edit', [AdminBranchController::class, 'edit'])->name('branches.edit');
+    Route::patch('/branches/{id}', [AdminBranchController::class, 'update'])->name('branches.update');
+    Route::delete('/branches/{id}', [AdminBranchController::class, 'destroy'])->name('branches.destroy');
+});

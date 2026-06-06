@@ -718,11 +718,26 @@ class MasterDataSeeder extends Seeder
         $productIds = DB::table('products')->pluck('id', 'slug');
 
         foreach ($products as $product) {
+            $productId = $productIds[$product['slug']];
+            $categoryId = $productCategoryIds[$product['category']] ?? null;
+
+            if ($categoryId) {
+                DB::table('product_category_product')->updateOrInsert([
+                    'product_id' => $productId,
+                    'product_category_id' => $categoryId,
+                ]);
+            }
+
+            DB::table('product_images')->updateOrInsert(
+                ['product_id' => $productId, 'url' => $product['image']],
+                ['position' => 0, 'created_at' => $now, 'updated_at' => $now]
+            );
+
             foreach ($product['variants'] as $variant) {
                 DB::table('product_variants')->updateOrInsert(
                     ['sku' => $variant['sku']],
                     [
-                        'product_id' => $productIds[$product['slug']],
+                        'product_id' => $productId,
                         'name' => $variant['name'],
                         'price' => $variant['price'],
                         'sku' => $variant['sku'],
