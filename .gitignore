@@ -21,3 +21,10 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+/.claude
+
+# Testing & Documentation
+TEST_CSRF.md
+
+# Template files
+/template-*.json
