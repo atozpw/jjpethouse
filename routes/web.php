@@ -12,8 +12,12 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ProductImportController as AdminProductImportController;
 use App\Http\Controllers\Admin\ProductCategoryController as AdminProductCategoryController;
 use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
+use App\Http\Controllers\Admin\ServiceItemController as AdminServiceItemController;
 use App\Http\Controllers\Admin\BookingController as AdminBookingController;
 use App\Http\Controllers\Admin\BranchController as AdminBranchController;
+use App\Http\Controllers\Admin\StaffController as AdminStaffController;
+use App\Http\Controllers\Admin\PetTypeController as AdminPetTypeController;
+use App\Http\Controllers\Admin\ImageUploadController as AdminImageUploadController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -83,6 +87,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::patch('/services/{id}', [AdminServiceController::class, 'update'])->name('services.update');
     Route::delete('/services/{id}', [AdminServiceController::class, 'destroy'])->name('services.destroy');
 
+    // Service Items
+    Route::get('/service-items', [AdminServiceItemController::class, 'index'])->name('service-items.index');
+    Route::get('/service-items/create', [AdminServiceItemController::class, 'create'])->name('service-items.create');
+    Route::post('/service-items', [AdminServiceItemController::class, 'store'])->name('service-items.store');
+    Route::get('/service-items/{id}/edit', [AdminServiceItemController::class, 'edit'])->name('service-items.edit');
+    Route::patch('/service-items/{id}', [AdminServiceItemController::class, 'update'])->name('service-items.update');
+    Route::delete('/service-items/{id}', [AdminServiceItemController::class, 'destroy'])->name('service-items.destroy');
+
     // Bookings
     Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/{id}/edit', [AdminBookingController::class, 'edit'])->name('bookings.edit');
@@ -97,4 +109,24 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/branches/{id}/edit', [AdminBranchController::class, 'edit'])->name('branches.edit');
     Route::patch('/branches/{id}', [AdminBranchController::class, 'update'])->name('branches.update');
     Route::delete('/branches/{id}', [AdminBranchController::class, 'destroy'])->name('branches.destroy');
+
+    // Staff
+    Route::get('/staff', [AdminStaffController::class, 'index'])->name('staff.index');
+    Route::get('/staff/create', [AdminStaffController::class, 'create'])->name('staff.create');
+    Route::post('/staff', [AdminStaffController::class, 'store'])->name('staff.store');
+    Route::get('/staff/{id}/edit', [AdminStaffController::class, 'edit'])->name('staff.edit');
+    Route::patch('/staff/{id}', [AdminStaffController::class, 'update'])->name('staff.update');
+    Route::delete('/staff/{id}', [AdminStaffController::class, 'destroy'])->name('staff.destroy');
+
+    // Pet Types
+    Route::get('/pet-types', [AdminPetTypeController::class, 'index'])->name('pet-types.index');
+    Route::get('/pet-types/create', [AdminPetTypeController::class, 'create'])->name('pet-types.create');
+    Route::post('/pet-types', [AdminPetTypeController::class, 'store'])->name('pet-types.store');
+    Route::get('/pet-types/{id}/edit', [AdminPetTypeController::class, 'edit'])->name('pet-types.edit');
+    Route::patch('/pet-types/{id}', [AdminPetTypeController::class, 'update'])->name('pet-types.update');
+    Route::delete('/pet-types/{id}', [AdminPetTypeController::class, 'destroy'])->name('pet-types.destroy');
+
+    // Image Upload
+    Route::post('/upload-image', [AdminImageUploadController::class, 'upload'])->name('upload-image');
+    Route::post('/delete-image', [AdminImageUploadController::class, 'delete'])->name('delete-image');
 });

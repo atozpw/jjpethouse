@@ -515,7 +515,7 @@ Rp ${totalPrice.toLocaleString("id-ID")}
                   <div>
                     <label className="mb-3 block text-sm font-semibold">Cabang</label>
                     {!selectedCity ? (
-                      <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+                      <p className="rounded-lg border border-dashed border-border hover:border-primary p-4 text-sm text-muted-foreground">
                         Pilih kota untuk melihat cabang yang menyediakan layanan ini.
                       </p>
                     ) : (
@@ -532,7 +532,7 @@ Rp ${totalPrice.toLocaleString("id-ID")}
                         )}
 
                         {selectedBranch && branch && mapUrl && (
-                          <div className="overflow-hidden rounded-lg border border-border md:col-span-2">
+                          <div className="overflow-hidden rounded-lg border border-border hover:border-primary md:col-span-2 transition-colors">
                             <iframe
                               title={`Map ${branch.name}`}
                               src={mapUrl}
@@ -540,13 +540,13 @@ Rp ${totalPrice.toLocaleString("id-ID")}
                               height="320"
                               loading="lazy"
                               referrerPolicy="no-referrer-when-downgrade"
-                              className="w-full"
+                              className="w-full pointer-events-none"
                             />
                           </div>
                         )}
 
                         {availableBranches.length === 0 && (
-                          <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+                          <p className="rounded-lg border border-dashed border-border hover:border-primary p-4 text-sm text-muted-foreground">
                             Belum ada cabang di kota ini yang menyediakan {service?.name}.
                           </p>
                         )}
@@ -1033,7 +1033,7 @@ function BranchDropdown({
       <button
         type="button"
         onClick={() => setIsOpen((current) => !current)}
-        className="flex w-full items-center justify-between gap-3 rounded-lg border border-input bg-background px-4 py-3 text-left text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+        className="flex w-full items-center justify-between gap-3 rounded-lg border border-input hover:border-primary bg-background px-4 py-3 text-left text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
       >
         <span className={selectedBranch ? "text-foreground" : "text-muted-foreground"}>
           {selectedBranch ? selectedBranch.name : "Pilih Cabang"}

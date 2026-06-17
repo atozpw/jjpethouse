@@ -59,7 +59,7 @@ class ServiceController extends Controller
             'service_category_id' => 'required|integer',
             'name'                => 'required|string|max:255',
             'description'         => 'nullable|string',
-            'price'               => 'required|numeric|min:0',
+            'price'               => 'nullable|numeric|min:0',
             'image'               => 'nullable|string|max:255',
             'duration'            => 'nullable|string|max:255',
             'rating'              => 'nullable|numeric|min:0|max:5',
@@ -73,6 +73,7 @@ class ServiceController extends Controller
             'active'              => 'boolean',
         ]);
 
+        $data['price'] = $data['price'] ?? 0;
         $data['slug'] = Str::slug($data['name']) . '-' . Str::random(5);
         $data['created_at'] = now();
         $data['updated_at'] = now();
@@ -101,7 +102,7 @@ class ServiceController extends Controller
             'service_category_id' => 'required|integer',
             'name'                => 'required|string|max:255',
             'description'         => 'nullable|string',
-            'price'               => 'required|numeric|min:0',
+            'price'               => 'nullable|numeric|min:0',
             'image'               => 'nullable|string|max:255',
             'duration'            => 'nullable|string|max:255',
             'rating'              => 'nullable|numeric|min:0|max:5',
@@ -115,6 +116,7 @@ class ServiceController extends Controller
             'active'              => 'boolean',
         ]);
 
+        $data['price'] = $data['price'] ?? 0;
         $data['updated_at'] = now();
 
         DB::table('services')->where('id', $id)->update($data);

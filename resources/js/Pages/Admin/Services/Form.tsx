@@ -3,8 +3,9 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import { ArrowLeft } from 'lucide-react';
 import {
     Field, Input, Select, Textarea, Toggle,
-    FormSection, ImagePreview, FormActions,
+    FormSection, FormActions,
 } from '@/Components/Admin/FormField';
+import ImageUpload from '@/Components/Admin/ImageUpload';
 
 type Category = { id: number; name: string };
 type Service = {
@@ -103,21 +104,9 @@ export default function ServiceForm({ categories, service }: { categories: Categ
                     </div>
                 </FormSection>
 
-                {/* Harga & Detail */}
-                <FormSection title="Harga & Detail" description="Informasi harga, durasi, dan rating">
+                {/* Detail Layanan */}
+                <FormSection title="Detail Layanan" description="Informasi durasi, rating, dan tipe jadwal">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <Field label="Harga (Rp)" required error={errors.price}>
-                            <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-400">Rp</span>
-                                <Input
-                                    type="number"
-                                    min="0"
-                                    value={data.price}
-                                    onChange={e => setData('price', Number(e.target.value))}
-                                    className="pl-8"
-                                />
-                            </div>
-                        </Field>
                         <Field label="Durasi" hint="Contoh: 60 menit, 1-2 jam">
                             <Input
                                 value={data.duration}
@@ -125,7 +114,7 @@ export default function ServiceForm({ categories, service }: { categories: Categ
                                 placeholder="60 menit"
                             />
                         </Field>
-                        <Field label="Rating (0–5)">
+                        <Field label="Rating (0–5)" hint="Rating default layanan">
                             <Input
                                 type="number"
                                 min="0"
@@ -145,7 +134,20 @@ export default function ServiceForm({ categories, service }: { categories: Categ
                                 <option value="range">Range (check-in / check-out)</option>
                             </Select>
                         </Field>
-                        <Field label="URL Link" hint="Opsional — halaman detail layanan" className="sm:col-span-2">
+                        <Field label="Harga (Rp)" hint="Opsional - harga ditentukan di Item Layanan" className="sm:col-span-2">
+                            <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-400">Rp</span>
+                                <Input
+                                    type="number"
+                                    min="0"
+                                    value={data.price}
+                                    onChange={e => setData('price', Number(e.target.value))}
+                                    className="pl-8"
+                                    placeholder="0 (harga ada di item layanan)"
+                                />
+                            </div>
+                        </Field>
+                        <Field label="URL Link" hint="Opsional — halaman detail layanan">
                             <Input
                                 value={data.url}
                                 onChange={e => setData('url', e.target.value)}
@@ -157,14 +159,13 @@ export default function ServiceForm({ categories, service }: { categories: Categ
 
                 {/* Gambar */}
                 <FormSection title="Gambar Layanan">
-                    <Field label="URL Gambar">
-                        <Input
+                    <Field label="Foto Layanan">
+                        <ImageUpload
                             value={data.image}
-                            onChange={e => setData('image', e.target.value)}
-                            placeholder="https://... atau /image/layanan.jpg"
+                            onChange={url => setData('image', url)}
+                            folder="services"
                         />
                     </Field>
-                    <ImagePreview src={data.image} />
                 </FormSection>
 
                 {/* Pengaturan */}

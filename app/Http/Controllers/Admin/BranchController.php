@@ -47,10 +47,13 @@ class BranchController extends Controller
     public function create(): Response
     {
         $cities = DB::table('cities')->orderBy('name')->get(['id', 'name']);
+        $services = DB::table('services')->orderBy('name')->get(['id', 'name']);
 
         return Inertia::render('Admin/Branches/Form', [
             'cities' => $cities,
+            'services' => $services,
             'branch' => null,
+            'selectedServices' => [],
         ]);
     }
 
@@ -70,13 +73,27 @@ class BranchController extends Controller
             'lng'           => 'nullable|numeric',
             'featured'      => 'boolean',
             'active'        => 'boolean',
+            'services'      => 'nullable|array',
+            'services.*'    => 'integer|exists:services,id',
         ]);
+
+        $services = $data['services'] ?? [];
+        unset($data['services']);
 
         $data['slug'] = Str::slug($data['name']);
         $data['created_at'] = now();
         $data['updated_at'] = now();
 
-        DB::table('branches')->insert($data);
+        $branchId = DB::table('branches')->insertGetId($data);
+
+        // Sync services
+        if (!empty($services)) {
+            $syncData = array_map(fn($serviceId) => [
+                'branch_id' => $branchId,
+                'service_id' => $serviceId,
+            ], $services);
+            DB::table('branch_service')->insert($syncData);
+        }
 
         return redirect()->route('admin.branches.index')->with('success', 'Cabang berhasil ditambahkan.');
     }
@@ -87,10 +104,17 @@ class BranchController extends Controller
         abort_if(! $branch, 404);
 
         $cities = DB::table('cities')->orderBy('name')->get(['id', 'name']);
+        $services = DB::table('services')->orderBy('name')->get(['id', 'name']);
+        $selectedServices = DB::table('branch_service')
+            ->where('branch_id', $id)
+            ->pluck('service_id')
+            ->toArray();
 
         return Inertia::render('Admin/Branches/Form', [
             'cities' => $cities,
+            'services' => $services,
             'branch' => $branch,
+            'selectedServices' => $selectedServices,
         ]);
     }
 
@@ -110,12 +134,27 @@ class BranchController extends Controller
             'lng'           => 'nullable|numeric',
             'featured'      => 'boolean',
             'active'        => 'boolean',
+            'services'      => 'nullable|array',
+            'services.*'    => 'integer|exists:services,id',
         ]);
+
+        $services = $data['services'] ?? [];
+        unset($data['services']);
 
         $data['slug'] = Str::slug($data['name']);
         $data['updated_at'] = now();
 
         DB::table('branches')->where('id', $id)->update($data);
+
+        // Sync services - delete old and insert new
+        DB::table('branch_service')->where('branch_id', $id)->delete();
+        if (!empty($services)) {
+            $syncData = array_map(fn($serviceId) => [
+                'branch_id' => $id,
+                'service_id' => $serviceId,
+            ], $services);
+            DB::table('branch_service')->insert($syncData);
+        }
 
         return redirect()->route('admin.branches.index')->with('success', 'Cabang berhasil diperbarui.');
     }

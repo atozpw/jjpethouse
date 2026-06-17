@@ -3,8 +3,9 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import {
     Field, Input, Textarea, Toggle,
-    FormSection, ImagePreview, FormActions,
+    FormSection, FormActions,
 } from '@/Components/Admin/FormField';
+import ImageUpload from '@/Components/Admin/ImageUpload';
 
 type Category = { id: number; name: string };
 type Variant = { name: string; price: number; sku: string | null; stock: number };
@@ -181,18 +182,17 @@ export default function ProductForm({
                         {data.images.map((image, index) => (
                             <div key={index} className="flex items-start gap-3">
                                 <div className="flex-1">
-                                    <Field label={`URL Gambar ${index + 1}`}>
-                                        <Input
+                                    <Field label={`Gambar ${index + 1}`}>
+                                        <ImageUpload
                                             value={image}
-                                            onChange={e => {
+                                            onChange={url => {
                                                 const images = [...data.images];
-                                                images[index] = e.target.value;
+                                                images[index] = url;
                                                 setData('images', images);
                                             }}
-                                            placeholder="https://... atau /image/produk.jpg"
+                                            folder="products"
                                         />
                                     </Field>
-                                    <ImagePreview src={image} />
                                 </div>
                                 {data.images.length > 1 && (
                                     <button

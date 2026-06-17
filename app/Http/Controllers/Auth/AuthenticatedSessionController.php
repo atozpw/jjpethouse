@@ -33,6 +33,14 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Check if user has any role (admin, super_admin, staff, etc.)
+        // If user has roles, redirect to admin panel
+        // If user has no roles (regular customer), redirect to dashboard
+        $user = Auth::user();
+        if ($user && $user->roles()->exists()) {
+            return redirect()->intended(route('admin.dashboard', absolute: false));
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

@@ -3,10 +3,12 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import { ArrowLeft } from 'lucide-react';
 import {
     Field, Input, Select, Textarea, Toggle,
-    FormSection, ImagePreview, FormActions,
+    FormSection, FormActions,
 } from '@/Components/Admin/FormField';
+import ImageUpload from '@/Components/Admin/ImageUpload';
 
 type City = { id: number; name: string };
+type Service = { id: number; name: string };
 type Branch = {
     id: number;
     city_id: number;
@@ -24,7 +26,17 @@ type Branch = {
     active: boolean;
 };
 
-export default function BranchForm({ cities, branch }: { cities: City[]; branch: Branch | null }) {
+export default function BranchForm({
+    cities,
+    services,
+    branch,
+    selectedServices
+}: {
+    cities: City[];
+    services: Service[];
+    branch: Branch | null;
+    selectedServices: number[];
+}) {
     const isEdit = !!branch;
     const { data, setData, post, patch, processing, errors } = useForm({
         city_id:       branch?.city_id       ?? '',
@@ -40,11 +52,21 @@ export default function BranchForm({ cities, branch }: { cities: City[]; branch:
         lng:           branch?.lng           ?? '',
         featured:      branch?.featured      ?? false,
         active:        branch?.active        ?? true,
+        services:      selectedServices      ?? [],
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         isEdit ? patch(`/admin/branches/${branch.id}`) : post('/admin/branches');
+    };
+
+    const toggleService = (serviceId: number) => {
+        const current = data.services as number[];
+        if (current.includes(serviceId)) {
+            setData('services', current.filter(id => id !== serviceId));
+        } else {
+            setData('services', [...current, serviceId]);
+        }
     };
 
     return (
@@ -160,15 +182,14 @@ export default function BranchForm({ cities, branch }: { cities: City[]; branch:
                                 placeholder="106.7807"
                             />
                         </Field>
-                        <Field label="URL Gambar" className="sm:col-span-2">
-                            <Input
+                        <Field label="Foto Cabang" className="sm:col-span-2">
+                            <ImageUpload
                                 value={data.image}
-                                onChange={e => setData('image', e.target.value)}
-                                placeholder="https://... atau /image/cabang.jpg"
+                                onChange={url => setData('image', url)}
+                                folder="branches"
                             />
                         </Field>
                     </div>
-                    <ImagePreview src={data.image} />
                 </FormSection>
 
                 {/* Status */}
@@ -187,6 +208,29 @@ export default function BranchForm({ cities, branch }: { cities: City[]; branch:
                             description="Tampilkan cabang ini di posisi utama / highlight"
                         />
                     </div>
+                </FormSection>
+
+                {/* Layanan Tersedia */}
+                <FormSection title="Layanan Tersedia" description="Pilih layanan yang tersedia di cabang ini">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {services.map(service => (
+                            <label
+                                key={service.id}
+                                className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg hover:border-accent cursor-pointer transition-colors"
+                            >
+                                <input
+                                    type="checkbox"
+                                    checked={(data.services as number[]).includes(service.id)}
+                                    onChange={() => toggleService(service.id)}
+                                    className="mt-1 h-4 w-4 text-accent focus:ring-accent border-gray-300 rounded"
+                                />
+                                <span className="text-sm text-gray-700">{service.name}</span>
+                            </label>
+                        ))}
+                    </div>
+                    {services.length === 0 && (
+                        <p className="text-sm text-gray-500">Belum ada layanan. Tambahkan layanan terlebih dahulu.</p>
+                    )}
                 </FormSection>
 
                 <FormActions processing={processing} cancelHref="/admin/branches" />

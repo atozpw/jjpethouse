@@ -1,9 +1,10 @@
-import { Link, usePage } from '@inertiajs/react';
-import { Menu, Search, ShoppingCart, User } from 'lucide-react';
+import { Link, router, usePage } from '@inertiajs/react';
+import { Menu, Search, ShoppingCart, User, LogOut, UserCircle, ChevronDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [cartPulse, setCartPulse] = useState(false);
   const { auth, cart } = usePage().props as unknown as {
     auth?: { user?: { name: string } | null };
@@ -20,6 +21,11 @@ export function Header() {
 
     return () => window.clearTimeout(timeout);
   }, [cartCount]);
+
+  const handleLogout = () => {
+    router.post('/logout');
+  };
+
   const navItems = [
     { label: 'Home', href: '/' },
     { label: 'Pet Shop', href: '/pet-shop' },
@@ -68,7 +74,48 @@ export function Header() {
                 </span>
               )}
             </Link>
-            {user && <Link href="/dashboard" className="hidden md:flex p-2 rounded-lg hover:bg-white/10"><User className="h-5 w-5" /></Link>}
+            {user && (
+              <div className="relative hidden md:block">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center gap-1 p-2 rounded-lg hover:bg-white/10 transition-colors"
+                >
+                  <User className="h-5 w-5" />
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+                {userMenuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setUserMenuOpen(false)} />
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                      <Link
+                        href="/dashboard"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <UserCircle size={16} />
+                        Dashboard
+                      </Link>
+                      <Link
+                        href="/profile"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <User size={16} />
+                        Profil
+                      </Link>
+                      <hr className="my-1 border-gray-200" />
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors text-left"
+                      >
+                        <LogOut size={16} />
+                        Logout
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
             <button className="lg:hidden p-2 rounded-lg hover:bg-white/10" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu"><Menu className="h-6 w-6" /></button>
           </div>
         </div>
@@ -76,7 +123,19 @@ export function Header() {
       <div className="hidden lg:flex border-b border-white/10 text-white pb-3 items-center">
         <div className="container mx-auto px-4"><div className="flex justify-center gap-8 font-bold text-xs">{navItems.map(item => <Link key={item.href} href={item.href} className="hover:text-white/60 transition-colors">{item.label}</Link>)}</div></div>
       </div>
-      {mobileOpen && <div className="lg:hidden bg-accent text-white px-4 pb-4 space-y-2">{navItems.map(item => <Link key={item.href} href={item.href} className="block py-2 font-bold text-sm">{item.label}</Link>)}</div>}
+      {mobileOpen && (
+        <div className="lg:hidden bg-accent text-white px-4 pb-4 space-y-2">
+          {navItems.map(item => <Link key={item.href} href={item.href} className="block py-2 font-bold text-sm">{item.label}</Link>)}
+          {user && (
+            <>
+              <hr className="my-2 border-white/20" />
+              <Link href="/dashboard" className="block py-2 font-bold text-sm">Dashboard</Link>
+              <Link href="/profile" className="block py-2 font-bold text-sm">Profil</Link>
+              <button onClick={handleLogout} className="block py-2 font-bold text-sm text-left w-full">Logout</button>
+            </>
+          )}
+        </div>
+      )}
     </header>
   );
 }
